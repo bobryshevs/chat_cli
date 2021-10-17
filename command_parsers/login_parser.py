@@ -14,4 +14,4 @@ class LoginParser(CommandParser):
             "nickname": raw_data[0],
             "password": raw_data[1]
         }
-        return self.command, args
+        return args

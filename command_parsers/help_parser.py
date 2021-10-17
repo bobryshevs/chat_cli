@@ -1,15 +1,27 @@
+from colorama.initialise import init
 from .command_parser import CommandParser
+from colored import (
+    BLUE,
+    GREEN,
+    YELLOW,
+    DEFAULT
+)
 
 
 class HelpParser(CommandParser):
 
-    def parse(self, user_input: str) -> tuple[str, dict]:
+    def parse(self, user_input: str) -> dict:
         help_message = \
-            "To start using the chat, you need to register and log in.\n" \
+            f"{GREEN}To start using the chat," \
+            f" you need to register and log in.\n" \
             "To do this, use the following commands: \n" \
-            "/register <nickname> <password> \n" \
-            "/login <nickname> <password> \n"
+            f"{YELLOW}/register {BLUE}<nickname> <password> \n" \
+            f"{YELLOW}/login {BLUE}<nickname> <password> \n{DEFAULT}\n" \
+            f"\n{GREEN}Another commands:\n"\
+            f"{YELLOW}/help --> {GREEN}Show this message\n" \
+            f"{YELLOW}/exit --> {GREEN}Close session\n" \
 
-        help_info = {"type": "help", "info": help_message}
 
-        return self.command, help_info
+        help_info = {"type": "/help", "info": help_message}
+
+        return help_info

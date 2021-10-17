@@ -15,7 +15,7 @@ class InputReader:
             if len(user_input) != 0:
                 return user_input
 
-    def read(self):
+    def read(self) -> dict:
         user_input: str = self.input()
         request: dict = self.input_parser.parse(user_input)
         return request

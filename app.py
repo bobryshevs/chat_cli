@@ -1,6 +1,6 @@
 from threading import Thread
 
-from handlers import InputHandler
+from input_handler import InputHandler
 from input_reader import InputReader
 from receiver import Receiver
 
@@ -25,12 +25,18 @@ class App:
         return thread
 
     def run(self):
+        self.start_message()
         while True:
             if not self.receive_thread.is_alive:
                 self.receive_thread.start()
 
             request: dict = self.input_reader.read()
             self.input_hanlder.handle(request)
+
+    def start_message(self) -> None:
+        self.input_hanlder.handle(
+            self.input_reader.input_parser.parse("/help")
+        )
 
     def close_threads(self):
         for thread in self.threads:

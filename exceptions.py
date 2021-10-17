@@ -1,2 +1,6 @@
 class BadInput(Exception):
     ...
+
+
+class Exit(Exception):
+    ...
