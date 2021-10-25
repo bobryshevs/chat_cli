@@ -1,74 +1,75 @@
 from dotenv import dotenv_values
-
-from command_parsers import (
-    HelpParser,
-    LoginParser,
-    RegisterParser,
-    ExitParser,
-    command_parser,
-    exit_parser
-)
-from handlers import (
+from command_parser import CommandParser
+from handler import (
+    Handler,
     HelpHandler,
     ExitHandler
 )
-from input_handler import InputHandler
+from request_builder import RequestBuilder
 from socket_manager import SocketManager
 from router import Router
 from input_reader import InputReader
-from input_parser import InputParser
+from input_processor import InputProcessor
 from receiver import Receiver
 from app import App
 
 config = dotenv_values(".env")
 
+input_reader = InputReader()
+command_parser = CommandParser()
+router = Router()
+
+input_processor = InputProcessor(
+    input_reader=input_reader,
+    command_parser=command_parser,
+    router=router,
+)
 
 socket_manager = SocketManager(
     server_host=config["SERVER_HOST"],
     server_port=int(config["SERVER_PORT"])
 )
-# --- Command parsers --- #
-help_command_parser = HelpParser(command="/help", args_count=0)
-login_command_parser = LoginParser(command="/login ", args_count=2)
-register_command_parser = RegisterParser(command="/register ", args_count=2)
-exit_command_parser = ExitParser(command="/exit", args_count=0)
 
-
-receiver = Receiver(socket_manager=socket_manager)
-input_parser = InputParser(
-    [
-        help_command_parser,
-        login_command_parser,
-        register_command_parser,
-        exit_command_parser
-    ]
-)
-
-# --- Handlers --- #
-help_handler = HelpHandler(socket_manager)
-exit_handler = ExitHandler(socket_manager)
-
-# --- Roueter config
-router = Router()
-router.register_handler(
-    route_str="/help",
-    handler_func_pointer=help_handler.handle
-)
-router.register_handler(
-    route_str="/exit",
-    handler_func_pointer=exit_handler.handle
-)
-
-# INPUT
-input_reader = InputReader(
-    input_parser=input_parser,
-    router=router
-)
-input_handler = InputHandler(router)
-
+receiver = Receiver(socket_manager=socket_manager, router=router)
 
 app = App(
-    input_reader=input_reader,
-    input_handler=input_handler,
-    receiver=receiver
+    input_processor=input_processor,
+    receiver=receiver)
+
+# __ RequestBuilders __ #
+register_request_builder = RequestBuilder(
+    request_type="register",
+    keys=["nickname", "password"]
+)
+login_request_builder = RequestBuilder(
+    request_type="login",
+    keys=["nickname", "password"]
+)
+get_message_page_request_builder = RequestBuilder(
+    request_type="message_page",
+    keys=["page", "page_size", "access_token"]
+)
+send_message_request_builder = RequestBuilder(
+    request_type="send_message",
+    keys=["text", "access_token"]
+)
+
+# __ Handlers __
+help_handler = HelpHandler()
+exit_handler = ExitHandler()
+register_handler = Handler(
+    request_builder=register_request_builder,
+    sock_manager=socket_manager
+)
+login_handler = Handler(
+    request_builder=login_request_builder,
+    sock_manager=socket_manager)
+
+get_message_page_handler = Handler(
+    request_builder=get_message_page_request_builder,
+    sock_manager=socket_manager
+)
+send_message_handler = Handler(
+    request_builder=send_message_request_builder,
+    sock_manager=socket_manager
 )
